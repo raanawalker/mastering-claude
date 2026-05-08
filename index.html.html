@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mastering Claude</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAF8;--bg2:#F2F1EE;--bg3:#E8E7E3;--white:#FFFFFF;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
+  --text:#1A1A18;--text2:#5A5A56;--text3:#909088;
+  --purple:#534AB7;--purple-l:#EEEDFE;--purple-m:#AFA9EC;--purple-d:#26215C;
+  --teal:#0F6E56;--teal-l:#E1F5EE;--teal-d:#04342C;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-d:#042C53;
+  --coral-l:#FAECE7;--coral:#712B13;
+  --amber-l:#FAEEDA;--amber:#633806;
+  --r:10px;--rs:7px;
+  --sh:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04);
+  --sh2:0 4px 12px rgba(0,0,0,0.08),0 2px 4px rgba(0,0,0,0.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.shell{max-width:780px;margin:0 auto;padding:0 20px 80px}
+
+/* NAV */
+.nav-bar{position:sticky;top:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);padding:10px 20px;margin:0 -20px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;box-shadow:var(--sh)}
+.nb{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:6px 12px;border-radius:20px;cursor:pointer;border:1.5px solid transparent;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all .15s}
+.nd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.nn{background:var(--bg2);border-color:var(--border2);color:var(--text2)}.nn:hover{background:var(--bg3)}
+.np{background:var(--teal-l);border-color:var(--teal);color:var(--teal-d)}
+.nd2{background:var(--blue-l);border-color:var(--blue);color:var(--blue-d)}
+.ns{background:var(--purple-l);border-color:var(--purple);color:var(--purple-d)}
+.nsep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+
+/* SCREENS */
+.screen{display:none;padding-top:28px}.screen.active{display:block}
+
+/* TYPE */
+.pt{font-family:'DM Serif Display',serif;font-size:30px;color:var(--text);margin-bottom:6px;line-height:1.2}
+.ps{font-size:14px;color:var(--text2);line-height:1.65;margin-bottom:20px}
+
+/* PROGRESS */
+.ptrack{height:3px;background:var(--bg3);border-radius:2px;margin-bottom:20px}
+.pfill{height:3px;background:var(--purple);border-radius:2px;transition:width .4s}
+
+/* BUTTONS */
+.btn{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:10px 20px;border-radius:var(--rs);cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;border:none}
+.bp{background:var(--purple);color:#fff}.bp:hover{background:var(--purple-d)}
+.bg{background:transparent;border:1px solid var(--border2);color:var(--text)}.bg:hover{background:var(--bg2)}
+.bgr{background:var(--teal);color:#fff}.bgr:hover{background:var(--teal-d)}
+.bsm{font-size:12px;padding:6px 12px}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:10px}
+.cp{padding:16px 20px}
+
+/* SURVEY */
+.qb{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:16px;box-shadow:var(--sh)}
+.ql{font-size:11px;font-weight:600;color:var(--purple);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.qt{font-size:18px;font-weight:500;color:var(--text);margin-bottom:4px;line-height:1.4}
+.qs{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+.qh{font-size:11px;color:var(--text3);margin-top:10px}
+.ol{display:flex;flex-direction:column;gap:7px}
+.opt{display:block;width:100%;text-align:left;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 15px;border-radius:var(--rs);cursor:pointer;transition:all .1s;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);font-weight:400}
+.opt:hover{border-color:var(--border2);background:var(--bg)}
+
+/* RATINGS */
+.rg{display:flex;flex-direction:column;gap:10px}
+.rrow{display:flex;align-items:center;gap:10px}
+.rlbl{flex:1;font-size:13px;color:var(--text);line-height:1.4}
+.rbtns{display:flex;gap:5px;flex-shrink:0}
+.rbtn{width:32px;height:32px;border-radius:var(--rs);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);transition:all .1s}
+.rbtn:hover{background:var(--bg3)}
+.rhdr{display:flex;justify-content:flex-end;gap:5px;margin-bottom:4px}
+.rhdr span{width:32px;text-align:center;font-size:10px;color:var(--text3);font-weight:500}
+
+/* INPUTS */
+.fi{width:100%;font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 15px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--bg2);color:var(--text);margin-bottom:10px;transition:border-color .15s}
+.fi:focus{outline:none;border-color:var(--purple);background:var(--white)}
+textarea.fi{resize:none}
+.or-lbl{font-size:12px;color:var(--text3);margin-bottom:8px;font-weight:500}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:24px}
+.tab{padding:10px 18px;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'DM Sans',sans-serif;background:transparent;border-top:none;border-left:none;border-right:none;transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple);font-weight:500}
+.tp{display:none}.tp.active{display:block}
+
+/* STATS */
+.srow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:20px}
+.stat{background:var(--bg2);border-radius:var(--r);padding:14px 16px}
+.sn{font-size:26px;font-weight:500;color:var(--text);font-family:'DM Serif Display',serif}
+.sl{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+
+/* PROFILE */
+.pcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:20px;box-shadow:var(--sh)}
+.pav{width:46px;height:46px;border-radius:50%;background:var(--purple-l);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--purple);flex-shrink:0}
+.tag{font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;display:inline-block}
+.tt{background:var(--teal-l);color:var(--teal-d)}
+.tp2{background:var(--purple-l);color:var(--purple-d)}
+
+/* MODULE CARDS */
+.mc{background:var(--white);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;box-shadow:var(--sh);transition:box-shadow .15s}
+.mc:hover{box-shadow:var(--sh2)}
+.mh{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .1s}
+.mh:hover{background:var(--bg2)}
+.mn2{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.mb{display:none;border-top:1px solid var(--border)}
+
+/* MODULE SECTIONS inside mb */
+.msec{padding:18px;border-bottom:1px solid var(--border)}
+.msec:last-child{border-bottom:none}
+.msec-title{font-size:11px;font-weight:600;color:var(--purple);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px}
+.ll{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:0}
+.li{font-size:13px;color:var(--text2);line-height:1.5;padding-left:16px;position:relative}
+.li:before{content:'—';position:absolute;left:0;color:var(--text3)}
+.cn{font-size:11px;color:var(--text3);padding:7px 12px;background:var(--bg2);border-radius:var(--rs);font-weight:500;margin-bottom:14px;display:inline-block}
+
+/* TASK SECTIONS */
+.task-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px}
+.task-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.task-text{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;font-family:'DM Sans',sans-serif}
+
+/* PROMPT BOX */
+.prompt-display{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;color:var(--text);line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;margin-bottom:10px}
+
+/* BADGES */
+.db{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;letter-spacing:.03em}
+.df{background:var(--amber-l);color:var(--amber)}
+.da{background:var(--teal-l);color:var(--teal-d)}
+.dv{background:var(--purple-l);color:var(--purple-d)}
+
+/* REF */
+.rsec{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:10px;box-shadow:var(--sh)}
+.rtitle{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.ricon{width:24px;height:24px;border-radius:50%;background:var(--purple-l);color:var(--purple);font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.re{font-size:12px;color:var(--text3);font-style:italic}
+.ri{font-size:12px;color:var(--text2);line-height:1.6;padding:5px 0;border-bottom:1px solid var(--border)}
+.ri:last-child{border-bottom:none}
+
+/* PROJECT PROMPT */
+.ppb{background:var(--bg2);border-radius:var(--r);padding:16px 18px;font-size:12px;font-family:'Courier New',monospace;color:var(--text);line-height:1.8;white-space:pre-wrap;max-height:420px;overflow-y:auto;border:1px solid var(--border);position:relative}
+
+/* NOTICE BOX */
+.notice{background:#FFF8E1;border:1px solid #F9A825;border-radius:var(--r);padding:14px 18px;margin-bottom:20px;font-size:13px;color:#5D4037;line-height:1.65}
+.notice strong{color:#3E2723}
+
+/* SHARE */
+.share-box{background:var(--purple-l);border:1px solid var(--purple-m);border-radius:var(--r);padding:16px 20px;margin-top:16px}
+.share-box p{font-size:13px;color:var(--purple-d);line-height:1.65;margin-bottom:10px}
+
+/* INTRO BOX */
+.ibox{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:24px;box-shadow:var(--sh)}
+.ibox p{font-size:14px;color:var(--text2);line-height:1.7}
+
+.nrow{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* LAUNCH MODAL */
+.lmodal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;padding:20px;align-items:center;justify-content:center}
+.lmodal.open{display:flex}
+.lbox{background:var(--white);border-radius:var(--r);padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:var(--sh2)}
+
+@media(max-width:600px){
+  .shell{padding:0 12px 40px}
+  .pt{font-size:24px}
+  .nav-bar{padding:8px 12px;gap:4px}
+  .nb{font-size:11px;padding:5px 9px}
+  .srow{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<div class="nav-bar" id="nav-bar">
+  <button class="nb ns" onclick="navTo('survey')"><div class="nd" style="background:#534AB7"></div>Survey</button>
+  <div class="nsep"></div>
+  <div id="nav-mods" style="display:flex;gap:5px;flex-wrap:wrap"></div>
+  <div class="nsep"></div>
+  <button class="nb ns" onclick="navTo('setup')"><div class="nd" style="background:#534AB7"></div>My setup</button>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="s-home">
+  <div class="pt">Mastering Claude</div>
+  <div class="ps">A personalised capability programme. 6 questions. 8 modules calibrated to your work.</div>
+  <div class="notice">
+    <strong>Best experience:</strong> Run this inside <strong>claude.ai</strong> — open Claude, start a new conversation, and paste this file's contents as a message. That way module prompts launch automatically with one click. If you're already inside Claude, you're good to go.
+  </div>
+  <div class="ibox"><p>Your answers determine module sequence, depth, and the prompt that launches each lesson. The course adapts to you — whether you're a farm manager, personal trainer, consultant, or CEO. Complete the survey, then work through modules one by one. Everything stays in one place.</p></div>
+  <button class="btn bp" id="start-btn">Start intake survey →</button>
+</div>
+
+<!-- SURVEY -->
+<div class="screen" id="s-survey">
+  <div class="pt">Intake survey</div>
+  <div class="ptrack"><div class="pfill" id="prog" style="width:0%"></div></div>
+  <div id="q-area"></div>
+  <div class="nrow">
+    <button class="btn bg" id="back-btn" style="display:none">← Back</button>
+    <button class="btn bp" id="next-btn">Next →</button>
+  </div>
+</div>
+
+<!-- COURSE -->
+<div class="screen" id="s-course">
+  <div class="tabs">
+    <button class="tab active" id="tb-modules" onclick="stab('modules')">Modules</button>
+    <button class="tab" id="tb-reference" onclick="stab('reference')">My Claude setup</button>
+    <button class="tab" id="tb-project" onclick="stab('project')">Project setup</button>
+  </div>
+
+  <div class="tp active" id="tab-modules">
+    <div id="profile"></div>
+    <div class="srow">
+      <div class="stat"><div class="sn" id="st-done">0</div><div class="sl">Started</div></div>
+      <div class="stat"><div class="sn">8</div><div class="sl">Modules</div></div>
+      <div class="stat"><div class="sn" id="st-time">—</div><div class="sl">Est. time</div></div>
+    </div>
+    <div class="ptrack" style="margin-bottom:20px"><div class="pfill" id="cprog" style="width:0%"></div></div>
+    <div id="mod-list"></div>
+  </div>
+
+  <div class="tp" id="tab-reference">
+    <div class="pt" style="font-size:24px;margin-bottom:6px">My Claude setup</div>
+    <p class="ps">Everything you configure, save to memory, or create during this course.</p>
+    <div id="ref-content"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn bg bsm" onclick="exportRef()">Review with Claude →</button>
+    </div>
+  </div>
+
+  <div class="tp" id="tab-project">
+    <div class="pt" style="font-size:24px;margin-bottom:6px">Project setup</div>
+    <p class="ps">Create a Claude Project called <strong>Mastering Claude</strong> and paste this into the Project Instructions field.</p>
+    <div style="position:relative">
+      <div class="ppb" id="project-prompt"></div>
+      <button class="btn bg bsm" id="cpp-btn" onclick="copyPP()" style="position:absolute;top:10px;right:10px">Copy →</button>
+    </div>
+    <div class="share-box" style="margin-top:20px">
+      <p><strong>Sharing this course</strong><br>Send the HTML file to someone. Tell them to open it inside Claude by copying the file contents and pasting into a new Claude conversation — or by uploading the file. This ensures module prompts launch automatically.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- LAUNCH MODAL (standalone fallback) -->
+<div class="lmodal" id="launch-modal">
+  <div class="lbox">
+    <div style="font-size:16px;font-weight:600;color:#1A1A18;margin-bottom:6px">Launch this module in Claude</div>
+    <p style="font-size:13px;color:#5A5A56;margin-bottom:14px;line-height:1.6">Copy this prompt and paste it into your Claude conversation to start the lesson:</p>
+    <textarea id="modal-prompt" style="width:100%;height:180px;font-size:12px;font-family:'Courier New',monospace;padding:10px;border:1px solid #ccc;border-radius:8px;resize:none;background:#F2F1EE" readonly></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn bp bsm" id="modal-copy-btn" onclick="copyModalPrompt()">Copy prompt</button>
+      <button class="btn bg bsm" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DIMS=[
+  {id:'prompts',label:'Writing prompts and getting useful outputs'},
+  {id:'personas',label:'Getting Claude to match your communication style'},
+  {id:'docs',label:'Creating documents, reports, presentations, spreadsheets'},
+  {id:'research',label:'Using Claude for research, analysis and fact-checking'},
+  {id:'artifacts',label:'Building interactive tools, dashboards or calculators'},
+  {id:'strategy',label:'Using AI strategically in your work or organisation'}
+];
+const FRIC=["Outputs sound generic and need heavy redrafting","Don't know when to trust the answers","Hard to get the right format and structure","Takes longer to prompt than just doing it myself","Not using it enough to know what I'm missing"];
+const GOAL=['A skill I can use in my next piece of work today','Getting consistently better outputs with less effort','Setting up Claude to know my communication style and work','Knowing when and how to use AI vs do it myself','Confidence to recommend or deploy AI in my organisation'];
+
+const Qs=[
+  {id:'role',text:'Which best describes what you do?',sub:"Pick the closest fit — we'll refine in the next question.",type:'single',
+   opts:['Leader or executive (CEO, director, GM, owner-operator)','Manager or team lead (operations, project, programme, farm, studio)','Advisor or consultant (strategy, finance, legal, HR, any domain)','Specialist or practitioner (analyst, coordinator, therapist, trainer, technician)','Something else entirely'],hasOther:true},
+  {id:'sector',text:'What field or industry are you working in?',sub:'Be as specific as you like — the more specific, the better your course.',type:'text_with_opts',
+   opts:['Agriculture, farming or rural (sheep, beef, dairy, horticulture, forestry)','Healthcare, aged care or wellness (clinical, admin, management)','Financial services (banking, insurance, investment, accounting)','Consulting or professional services','Government or public sector','Education, sport or fitness','Construction, infrastructure or real estate','Other — I\'ll describe it'],hasOther:true},
+  {id:'outputs',text:'What kinds of outputs do you produce most often?',sub:"Select everything that applies — don't hold back.",type:'multi',
+   opts:['Reports, papers or briefings (for a board, manager, client or regulator)','Plans and schedules (project plans, farm plans, programmes, roadmaps)','Presentations and pitch decks','Proposals, tenders or funding applications','Analysis, research or strategy documents','Governance documents (policies, minutes, compliance, risk registers)','Client or customer communications (letters, emails, session notes)','Operational documents (SOPs, handbooks, checklists, training materials)','Financial models or spreadsheets','Something else'],hasOther:true},
+  {id:'capability',text:'How would you rate yourself in each area right now?',sub:'Be honest — there are no wrong answers. This calibrates your course depth.',type:'matrix',dims:DIMS},
+  {id:'friction',text:'What are your biggest frustrations with AI tools?',sub:'Rate each one — this shapes which modules go first.',type:'rate_other',opts:FRIC},
+  {id:'goals',text:'What would make this course genuinely valuable to you?',sub:'Rate your priorities.',type:'rate_other',opts:GOAL}
+];
+
+const RMAP={'Leader or executive (CEO, director, GM, owner-operator)':'exec','Manager or team lead (operations, project, programme, farm, studio)':'pm','Advisor or consultant (strategy, finance, legal, HR, any domain)':'consultant','Specialist or practitioner (analyst, coordinator, therapist, trainer, technician)':'specialist','Something else entirely':'other'};
+const DMAP={1:'foundational',2:'foundational',3:'applied',4:'advanced',5:'advanced'};
+const DLBL={foundational:'Foundational',applied:'Applied',advanced:'Advanced'};
+const TMAP={foundational:45,applied:35,advanced:20};
+const DTAG={foundational:{bg:'#FAEEDA',c:'#633806'},applied:{bg:'#E1F5EE',c:'#04342C'},advanced:{bg:'#EEEDFE',c:'#26215C'}};
+
+const TASKS={
+  m1:{type:'practice',practice:`Take your most common output type right now — whatever you are most likely to produce this week. Build a proper four-layer prompt for it:\n\n1. Write the basic version (what you would normally type)\n2. Then build the layered version: Role / Context / Task / Format\n3. Run both in Claude and compare the outputs\n\nNote: what changed between the two outputs, and why.`,setup:null},
+  m2:{type:'both',practice:`Write a session primer for your most active current workstream.\nTwo to four sentences covering:\n— Current state (where things are right now)\n— What you are working on today\n— Any constraints or new information Claude needs`,setup:`Create a Claude Project for your most active workstream:\n1. Go to claude.ai → Projects → New Project\n2. Name it after your workstream\n3. Copy the system prompt from the Project Setup tab\n4. Paste it into the Project Instructions field\n5. Upload any key documents relevant to that workstream\n\nWhen done, mark this module complete.`},
+  m3:{type:'both',practice:`Take your most common output type and generate a real document right now using the full prompt structure:\n— Format (Word / PowerPoint / Excel / PDF)\n— Purpose and audience\n— Content outline\n— Explicit section structure\n— Tone and style\n— What to exclude`,setup:`Save format presets to Claude memory for your top two or three output types. Ask Claude:\n\n"Please save the following format presets to my memory: [describe your two or three most common output formats with their structure, length, tone, and audience]"\n\nConfirm each is saved, then mark this module complete.`},
+  m4:{type:'practice',practice:`Two practice tasks:\n\n1. Take a real question from your work that you would normally ask Claude from training data. Add explicit search direction: "Search for this — do not answer from training data." Compare what comes back.\n\n2. Run a bias check: search for a topic relevant to your field, then ask Claude: "What are the search results not showing me about this topic?"`,setup:null},
+  m5:{type:'both',practice:`Design one persona for your most common work context and test it:\n1. Describe the role, expertise, and perspective you want Claude to adopt\n2. Add the anti-sycophancy instruction: "Your loyalty is to the quality of the output, not to my preferences"\n3. Test it on a real piece of work right now\n4. Review the output — is it noticeably different?`,setup:`Build your full persona library — three to five communication registers for your specific work. For each one, ask Claude:\n\n"Please save this persona to my memory: [name] — [description of role, expertise, perspective, and key instructions]"\n\nTest each persona after saving. Confirm all saved, then mark this module complete.`},
+  m6:{type:'both',practice:`Brief and build one artifact relevant to your current work:\n1. Describe what the user does (interactions, inputs)\n2. Describe what changes when they interact\n3. Describe the starting state and default values\n4. Specify the output format\n\nAsk Claude to build it. Review and refine.`,setup:`Build one practical tool you will actually reuse — a calculator, tracker, diagnostic, or reference dashboard relevant to your field.\n\nBrief it properly using the behaviour brief structure. Build it. Save or note the prompt pattern so you can recreate it.\n\nWhen done, mark this module complete.`},
+  m7:{type:'both',practice:`Ask Claude to suggest three Claude-powered tools (using the Anthropic API inside artifacts) that would genuinely be useful for your specific work. For each:\n— What it does\n— Why it fits your work\n— How complex it would be to build\n\nPick the most useful one and ask Claude to build it.`,setup:`Build the tool you chose in the practice task. When it is working:\n1. Note the tool name and what it does\n2. Save the key prompt pattern so you can recreate or modify it\n\nMark this module complete when done.`},
+  m8:{type:'both',practice:`Draft your AI capability statement — two or three sentences you could say to a client, colleague, employer, or board member. Ask Claude to test it:\n\n"Does this sound like a practitioner or a vendor? How would you improve it?"\n\nRefine until it sounds genuinely credible.`,setup:`Update one thing right now to reflect your AI capability:\n— A LinkedIn About section line\n— A CV bullet point\n— A client bio sentence\n— An email signature note\n\nAsk Claude to draft it calibrated to your seniority and sector. When done, mark this module complete.`}
+};
+
+const TEACH={
+  m1:`Prompt architecture — the four-layer stack\n\nThe reason outputs sound generic is almost always a context problem. Claude is trying to help someone in your field produce some kind of document. Without more, that is all it knows.\n\nThe four layers fix this:\n\nLayer 1 — ROLE\nTell Claude who it is: the expertise, seniority, and perspective it needs. Not "be an expert" but specific: sector, experience, what kind of decisions it makes.\n\nLayer 2 — CONTEXT\nWhat Claude needs to know that it cannot infer: your organisation, the situation, the audience, the constraints, the political dynamics.\n\nLayer 3 — TASK\nNot a category ("write a report") but a specific deliverable with an angle and an outcome. "Write a board paper recommending the board approve X" is a task. "Write a report about X" is not.\n\nLayer 4 — FORMAT\nExactly how the output should look: word count, section names in order, tone, what to exclude, how to end. This is the layer that prevents redrafting.`,
+  m2:`Memory and context — what Claude actually remembers\n\nEvery new conversation starts completely fresh. Claude has no memory of previous sessions unless you give it one.\n\nThree things exist:\n\nTraining knowledge — fixed at August 2025. Everything Claude knows about the world. Cannot be updated.\n\nuserMemories — facts about you injected at the start of every conversation. Saved personas, format presets, standing instructions. Persistent across sessions.\n\nContext window — everything in this conversation. Your messages, Claude's replies, documents you paste, files you upload. Resets completely when you start a new conversation.\n\nProjects fix the reset problem. A Project is a persistent workspace with a system prompt that loads automatically at the start of every conversation inside it. Create one per major workstream.`,
+  m3:`Document and file creation — when to use which\n\nWord (.docx): prose-led documents for reading — board papers, briefs, letters, legal correspondence. Use when the output is primarily text someone reads linearly.\n\nPowerPoint (.pptx): visual content for presenting — pitch decks, board presentations, proposals. Use when the output will be shown on a screen or printed as a visual document.\n\nExcel (.xlsx): structured data with calculation — commercial models, project plans, trackers, budgets. Use when numbers need calculating, comparing, or tracking.\n\nPDF: fixed-format for sharing — final versions, formal submissions, anything going to a solicitor or insurer. Create in Word or Excel first, convert when final.\n\nThe prompt structure that gets first-draft quality:\nFormat / Purpose and audience / Content / Section structure / Tone / Exclusions`,
+  m4:`Web search and research — the dangerous middle ground\n\nClaude does not always search. It uses training data by default — which has a cutoff of August 2025 and may be wrong about specific facts, prices, policies, or current events.\n\nThe failure mode: Claude produces a confident, well-structured answer using stale or invented information. The output passes the smell test but the underlying facts are wrong.\n\nWhen to always search:\n— Regulations and policy detail (anything that changes)\n— Current market data, prices, rates\n— Named organisations — who leads them, what they have announced\n— Recent events, rulings, decisions\n\nWhen training data is fine:\n— Stable frameworks, methodologies, principles\n— Historical facts\n— Writing and structuring help\n\nThe fix: add "Search for this — do not answer from training data" to any prompt where currency matters.`,
+  m5:`Personas and instruction design — setting Claude up for your work\n\nClaude defaults to a generic helpful assistant. A persona tells it who to be — the expertise, perspective, and communication register it needs for your specific work.\n\nWhat makes a good persona:\n— Specific expertise (not "expert" but what kind, in what context)\n— The audience it is writing for\n— The tone and register\n— An explicit anti-sycophancy instruction\n\nThe anti-sycophancy instruction is the most important line:\n"Your loyalty is to the quality of the output, not to my preferences. Push back if my framing has a flaw."\n\nWithout it, Claude subtly optimises toward what it thinks you want to hear rather than what is most accurate or useful.\n\nPersonas saved to memory load automatically in every future session. You invoke them by name.`,
+  m6:`Artifacts and interactive tools — when to build vs document\n\nAn artifact is a piece of software that runs inside Claude — an interactive tool, calculator, dashboard, or diagnostic. Not a document you read but a tool you use.\n\nWhen to build an artifact:\n— The value is in the interaction (adjusting assumptions, filtering data, running a scenario)\n— The output will be used repeatedly, not read once\n— You want a client to interact with something rather than read something\n\nHow to brief an artifact — describe behaviour, not appearance:\n— What the user does (clicks, selects, inputs)\n— What changes when they do it\n— The starting state and default values\n— What the output is and who uses it\n\nThe most common mistake: describing what it looks like instead of what it does. "A dashboard with cards and a blue colour scheme" is not a brief.`,
+  m7:`Claude-in-Claude apps — tools that think\n\nA standard artifact runs logic in JavaScript. A Claude-in-Claude app goes further — it calls the Anthropic API from inside the artifact, so the tool itself can reason, generate text, analyse documents, and adapt to inputs.\n\nWhen this is worth the extra complexity:\n— The tool needs to reason about user input, not just calculate it\n— You want natural language output (analysis, recommendations, summaries)\n— The tool needs to handle variable or unstructured input\n\nCommon patterns:\n— Document analyser (upload a document, get a structured analysis)\n— Brief generator (answer a few questions, get a draft)\n— Capability assessor (complete a survey, get a personalised report)\n— Role fit scorer (paste a job description, get an assessment)`,
+  m8:`AI fluency and confidence — using and talking about AI with authority\n\nGenuine AI fluency is not about knowing the technology. It is about knowing when to use it, how to evaluate its outputs, and how to talk about it credibly.\n\nWhat it looks like at a senior level:\n— You know when Claude is likely to be wrong (and you verify)\n— You can brief it precisely enough to get first-draft quality output\n— You can explain the value of AI to a board or client without sounding like a vendor\n— You have a personal setup (personas, formats, Projects) that compounds over time\n\nHow to talk about AI without sounding like a vendor:\n— Lead with outcomes, not capabilities ("I reduced first-draft time by half" not "I use advanced AI tools")\n— Be specific about what you actually do differently\n— Acknowledge the limitations — this builds credibility\n— Tie it to your domain expertise, not to AI as a standalone skill`
+};
+
+let ans={},qIdx=0,openMod=null,doneMods=new Set(),progMods=new Set(),refData={};
+
+function rl(a){return a.role==='Something else entirely'&&a.role_other?a.role_other:(a.role||'professional');}
+function sl(a){const s=(a.sector_text||'').trim();if(s)return s;return a.sector==="Other — I'll describe it"&&a.sector_other?a.sector_other:(a.sector||'their field');}
+function ol(a){const o=(a.outputs||[]).filter(x=>x!=='Something else');if(a.outputs_other)o.push(a.outputs_other);return o.join(', ')||'various outputs';}
+function ds(a,d){return a.capability&&a.capability[d]?+a.capability[d]:3;}
+function tf(a){return Object.entries(a.friction_ratings||{}).sort((x,y)=>y[1]-x[1]).slice(0,2).map(e=>FRIC[+e[0]]).filter(Boolean).join('; ')||'generic outputs';}
+function tg(a){return Object.entries(a.goal_ratings||{}).sort((x,y)=>y[1]-x[1]).slice(0,2).map(e=>GOAL[+e[0]]).filter(Boolean).join('; ')||'better outputs';}
+
+const Ms=[
+  {id:'m1',num:1,t:'Prompt architecture',s:'The four-layer stack that separates useful from generic',dim:'prompts',tags:{exec:'advanced',consultant:'advanced',pm:'applied',specialist:'foundational',other:'foundational'},taskType:'practice',setupKey:null},
+  {id:'m2',num:2,t:'Memory and context',s:'What Claude remembers, what it forgets, and how to bridge the gap',dim:'prompts',tags:{exec:'applied',consultant:'applied',pm:'advanced',specialist:'foundational',other:'foundational'},taskType:'both',setupKey:'projects'},
+  {id:'m3',num:3,t:'Document and file creation',s:'Reports, plans, presentations, spreadsheets — when to use which',dim:'docs',tags:{exec:'applied',consultant:'applied',pm:'applied',specialist:'foundational',other:'foundational'},taskType:'both',setupKey:'formats'},
+  {id:'m4',num:4,t:'Web search and research',s:'When Claude searches vs hallucinates — and how to tell',dim:'research',tags:{exec:'applied',consultant:'advanced',pm:'applied',specialist:'applied',other:'foundational'},taskType:'practice',setupKey:null},
+  {id:'m5',num:5,t:'Personas and instruction design',s:'Setting Claude up to know your voice and your work',dim:'personas',tags:{exec:'advanced',consultant:'advanced',pm:'applied',specialist:'applied',other:'foundational'},taskType:'both',setupKey:'personas'},
+  {id:'m6',num:6,t:'Artifacts and interactive tools',s:'Live tools, calculators and dashboards built inside Claude',dim:'artifacts',tags:{exec:'applied',consultant:'advanced',pm:'applied',specialist:'foundational',other:'foundational'},taskType:'both',setupKey:'artifacts'},
+  {id:'m7',num:7,t:'Claude-in-Claude apps',s:'Building tools that think — powered by the Anthropic API',dim:'artifacts',tags:{exec:'foundational',consultant:'advanced',pm:'applied',specialist:'foundational',other:'foundational'},taskType:'both',setupKey:'claude_apps'},
+  {id:'m8',num:8,t:'AI fluency and confidence',s:'Using and talking about AI with authority in your work',dim:'strategy',tags:{exec:'advanced',consultant:'advanced',pm:'applied',specialist:'applied',other:'foundational'},taskType:'both',setupKey:'positioning'}
+];
+
+const REFS={projects:{title:'Projects created',icon:'P',empty:'Complete Module 2 to set up your first Project'},formats:{title:'Format presets saved',icon:'F',empty:'Complete Module 3 to save your format presets'},personas:{title:'Persona library',icon:'Pe',empty:'Complete Module 5 to build your persona library'},artifacts:{title:'Artifacts and tools',icon:'A',empty:'Complete Module 6 to build your first artifact'},claude_apps:{title:'Claude-powered apps',icon:'CA',empty:'Complete Module 7 to build a Claude app'},positioning:{title:'AI positioning',icon:'Pos',empty:'Complete Module 8 to draft your positioning'}};
+
+function mdepth(a,m){
+  const sc=ds(a,m.dim),dd=DMAP[sc]||'foundational',rk=RMAP[a.role]||'other',td=m.tags[rk]||'foundational',o=['foundational','applied','advanced'];
+  return o[Math.max(o.indexOf(dd),o.indexOf(td))];
+}
+
+function fullPrompt(m,a){
+  const d=mdepth(a,m),t=TASKS[m.id];
+  let p=`MASTERING CLAUDE — MODULE ${m.num}: ${m.t.toUpperCase()}\n`;
+  p+=`Profile: ${rl(a)}, ${sl(a)}\n`;
+  p+=`Capability (${m.dim}): ${ds(a,m.dim)}/5 → ${DLBL[d]} treatment\n\n`;
+  p+=`---\n\nTEACH\n\n${TEACH[m.id]}\n\n---\n\nAPPLY\n\n${t.practice}`;
+  if(t.setup)p+=`\n\n---\n\nSETUP\n\n${t.setup}`;
+  p+=`\n\n---\n\nWhen done: return to the app and click "Mark complete" on Module ${m.num}.`;
+  return p;
+}
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function stab(id){document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('tab-'+id).classList.add('active');document.getElementById('tb-'+id).classList.add('active');if(id==='reference')renderRef();if(id==='project')renderPP();}
+
+function navTo(t){
+  if(t==='survey'){show('s-survey');if(!Object.keys(ans).length)renderQ();}
+  else if(t==='setup'){show('s-course');stab('reference');}
+  else{
+    show('s-course');stab('modules');
+    setTimeout(()=>{
+      // expand the module and scroll to it
+      if(openMod!==t){openMod=t;renderCourse();}
+      const el=document.getElementById('mc-'+t);
+      if(el)el.scrollIntoView({behavior:'smooth',block:'start'});
+    },100);
+  }
+}
+
+function renderNav(){
+  const nav=document.getElementById('nav-mods');nav.innerHTML='';
+  Ms.forEach(m=>{
+    const btn=document.createElement('button');
+    const dn=doneMods.has(m.id),pg=progMods.has(m.id)&&!dn;
+    btn.className='nb '+(dn?'nd2':pg?'np':'nn');
+    btn.innerHTML=`<div class="nd" style="background:${dn?'#185FA5':pg?'#0F6E56':'#909088'}"></div>M${m.num}`;
+    btn.title=m.t;btn.onclick=()=>navTo(m.id);
+    nav.appendChild(btn);
+  });
+}
+
+const OD='background:#F2F1EE;border:1.5px solid rgba(0,0,0,0.1);color:#1A1A18;font-weight:400';
+const OSEL='background:#EEEDFE;border:2px solid #534AB7;color:#26215C;font-weight:500';
+const OMSEL='background:#E1F5EE;border:2px solid #0F6E56;color:#04342C;font-weight:500';
+const OS='display:block;width:100%;text-align:left;font-family:"DM Sans",sans-serif;font-size:14px;padding:11px 15px;border-radius:7px;cursor:pointer;transition:all .1s;';
+
+function makeRG(items,key){
+  const wrap=document.createElement('div');wrap.className='rg';
+  const hdr=document.createElement('div');hdr.className='rhdr';
+  [1,2,3,4,5].forEach(n=>{const s=document.createElement('span');s.textContent=n;hdr.appendChild(s);});
+  wrap.appendChild(hdr);
+  items.forEach((item,i)=>{
+    const id=item.id!==undefined?item.id:i;
+    const saved=ans[key]||{};
+    const row=document.createElement('div');row.className='rrow';
+    const lbl=document.createElement('div');lbl.className='rlbl';lbl.textContent=item.label||item;row.appendChild(lbl);
+    const btns=document.createElement('div');btns.className='rbtns';
+    [1,2,3,4,5].forEach(n=>{
+      const b=document.createElement('button');b.className='rbtn';
+      if(+(saved[id]||0)===n){b.style.background='#534AB7';b.style.color='#fff';b.style.borderColor='#534AB7';}
+      b.textContent=n;
+      b.onclick=()=>{btns.querySelectorAll('.rbtn').forEach(x=>{x.style.background='';x.style.color='';x.style.borderColor='';});b.style.background='#534AB7';b.style.color='#fff';b.style.borderColor='#534AB7';if(!ans[key])ans[key]={};ans[key][id]=n;};
+      btns.appendChild(b);
+    });
+    row.appendChild(btns);wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+function renderQ(){
+  const q=Qs[qIdx];
+  document.getElementById('prog').style.width=Math.round(qIdx/Qs.length*100)+'%';
+  document.getElementById('back-btn').style.display=qIdx>0?'inline-flex':'none';
+  document.getElementById('next-btn').textContent=qIdx===Qs.length-1?'Build my course →':'Next →';
+  const area=document.getElementById('q-area');area.innerHTML='';
+  const b=document.createElement('div');b.className='qb';
+  const ql=document.createElement('div');ql.className='ql';ql.textContent=`Question ${qIdx+1} of ${Qs.length}`;b.appendChild(ql);
+  const qt=document.createElement('div');qt.className='qt';qt.textContent=q.text;b.appendChild(qt);
+  if(q.sub){const qs=document.createElement('div');qs.className='qs';qs.textContent=q.sub;b.appendChild(qs);}
+
+  if(q.type==='single'){
+    const list=document.createElement('div');list.className='ol';let oi=null;
+    q.opts.forEach(o=>{
+      const btn=document.createElement('button');btn.style.cssText=OS+(ans[q.id]===o?OSEL:OD);btn.textContent=o;
+      const isO=q.hasOther&&o===q.opts[q.opts.length-1];
+      btn.onclick=()=>{list.querySelectorAll('button').forEach(x=>{x.style.cssText=OS+OD;});btn.style.cssText=OS+OSEL;ans[q.id]=o;if(oi)oi.style.display=isO?'block':'none';};
+      list.appendChild(btn);
+      if(isO){oi=document.createElement('input');oi.type='text';oi.placeholder='Tell us what you do...';oi.className='fi';oi.style.display=ans[q.id]===o?'block':'none';oi.style.marginTop='8px';oi.value=ans[q.id+'_other']||'';oi.oninput=()=>{ans[q.id+'_other']=oi.value;};list.appendChild(oi);}
+    });
+    b.appendChild(list);const h=document.createElement('div');h.className='qh';h.textContent='Select one option';b.appendChild(h);
+
+  } else if(q.type==='text_with_opts'){
+    const ft=document.createElement('input');ft.type='text';ft.placeholder='e.g. NZ sheep and beef farming, personal training, secondary school teaching...';ft.className='fi';ft.value=ans.sector_text||'';ft.oninput=()=>{ans.sector_text=ft.value;};b.appendChild(ft);
+    const or=document.createElement('div');or.className='or-lbl';or.textContent='Or pick the closest category:';b.appendChild(or);
+    const list=document.createElement('div');list.className='ol';
+    // put Other last
+    const opts=[...q.opts.filter(o=>!o.startsWith('Other')),'Other — I\'ll describe it'];
+    opts.forEach(o=>{
+      const btn=document.createElement('button');btn.style.cssText=OS+(ans[q.id]===o?OSEL:OD);btn.textContent=o;
+      btn.onclick=()=>{list.querySelectorAll('button').forEach(x=>{x.style.cssText=OS+OD;});btn.style.cssText=OS+OSEL;ans[q.id]=o;};
+      list.appendChild(btn);
+    });
+    b.appendChild(list);const h=document.createElement('div');h.className='qh';h.textContent='Type your field above, or select the closest category';b.appendChild(h);
+
+  } else if(q.type==='multi'){
+    const sel=ans[q.id]||[];const list=document.createElement('div');list.className='ol';let oi=null;
+    q.opts.forEach(o=>{
+      const isO=o==='Something else';const btn=document.createElement('button');btn.style.cssText=OS+(sel.includes(o)?OMSEL:OD);btn.textContent=o;
+      btn.onclick=()=>{const cur=ans[q.id]||[];if(cur.includes(o)){ans[q.id]=cur.filter(x=>x!==o);btn.style.cssText=OS+OD;if(isO&&oi)oi.style.display='none';}else{ans[q.id]=[...cur,o];btn.style.cssText=OS+OMSEL;if(isO&&oi)oi.style.display='block';}};
+      list.appendChild(btn);
+      if(isO){oi=document.createElement('input');oi.type='text';oi.placeholder='Describe your outputs...';oi.className='fi';oi.style.display=sel.includes('Something else')?'block':'none';oi.style.marginTop='8px';oi.value=ans[q.id+'_other']||'';oi.oninput=()=>{ans[q.id+'_other']=oi.value;};list.appendChild(oi);}
+    });
+    b.appendChild(list);const h=document.createElement('div');h.className='qh';h.textContent='Select all that apply — highlighted = selected';b.appendChild(h);
+
+  } else if(q.type==='matrix'){
+    b.appendChild(makeRG(q.dims,'capability'));
+    const h=document.createElement('div');h.className='qh';h.textContent="1 = not yet tried, 5 = confident daily use";b.appendChild(h);
+
+  } else if(q.type==='rate_other'){
+    b.appendChild(makeRG(q.opts.map((o,i)=>({id:i,label:o})),q.id+'_ratings'));
+    const ol2=document.createElement('div');ol2.style.cssText='font-size:13px;font-weight:500;color:#5A5A56;margin-top:12px';ol2.textContent='Anything else to add?';
+    const oi=document.createElement('textarea');oi.placeholder='Optional...';oi.rows=2;oi.className='fi';oi.value=ans[q.id+'_other']||'';oi.oninput=()=>{ans[q.id+'_other']=oi.value;};
+    const h=document.createElement('div');h.className='qh';h.textContent='1 = not relevant, 5 = very important';
+    b.appendChild(ol2);b.appendChild(oi);b.appendChild(h);
+  }
+  area.appendChild(b);
+}
+
+function renderCourse(){
+  const a=ans;
+  const INI={'Leader or executive (CEO, director, GM, owner-operator)':'LE','Manager or team lead (operations, project, programme, farm, studio)':'ML','Advisor or consultant (strategy, finance, legal, HR, any domain)':'AC','Specialist or practitioner (analyst, coordinator, therapist, trainer, technician)':'SP','Something else entirely':'??'};
+  document.getElementById('profile').innerHTML=`<div class="pcard"><div style="display:flex;align-items:center;gap:14px;margin-bottom:12px"><div class="pav">${INI[a.role]||'??'}</div><div><div style="font-size:16px;font-weight:500;color:#1A1A18">${rl(a)}</div><div style="font-size:13px;color:#5A5A56">${sl(a)}</div></div></div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${(a.outputs||[]).filter(o=>o!=='Something else').slice(0,3).map(o=>`<span class="tag tt">${o}</span>`).join('')}</div><div style="font-size:12px;color:#5A5A56;line-height:1.6">Top goals: ${tg(a)}</div></div>`;
+
+  const sorted=[...Ms].sort((x,y)=>{const o=['advanced','applied','foundational'];return o.indexOf(mdepth(a,x))-o.indexOf(mdepth(a,y));});
+  let tot=0;sorted.forEach(m=>{tot+=TMAP[mdepth(a,m)];});
+  const h=tot/60;
+  document.getElementById('st-time').textContent=h>=1?'~'+h.toFixed(1).replace('.0','')+'h':'~'+tot+'m';
+
+  const list=document.getElementById('mod-list');list.innerHTML='';
+  sorted.forEach((m,i)=>{
+    const d=mdepth(a,m),dn=doneMods.has(m.id),pg=progMods.has(m.id)&&!dn,isOpen=openMod===m.id,dt=DTAG[d];
+    const card=document.createElement('div');card.className='mc';card.style.opacity=dn?'.75':'1';card.id='mc-'+m.id;
+
+    // HEAD
+    const head=document.createElement('div');head.className='mh';
+    const ne=document.createElement('div');ne.className='mn2';
+    if(dn){ne.style.cssText='background:#E6F1FB;color:#042C53';}
+    else if(pg){ne.style.cssText='background:#E1F5EE;color:#04342C';}
+    else{ne.style.cssText='background:#F2F1EE;color:#5A5A56;border:1px solid rgba(0,0,0,0.12)';}
+    ne.textContent=dn?'✓':m.num;
+
+    const info=document.createElement('div');info.style.flex='1';
+    info.innerHTML=`<div style="font-size:14px;font-weight:500;color:#1A1A18">${m.t}</div><div style="font-size:12px;color:#5A5A56;margin-top:2px">${m.s}</div>`;
+
+    const tBg=m.taskType==='practice'?'#E1F5EE':'#FAECE7',tC=m.taskType==='practice'?'#04342C':'#712B13',tL=m.taskType==='practice'?'Practice':'Practice + Setup';
+    const meta=document.createElement('div');meta.style.cssText='display:flex;align-items:center;gap:6px;flex-shrink:0';
+    meta.innerHTML=`<span class="db d${d[0]}">${DLBL[d]}</span><span style="font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;background:${tBg};color:${tC}">${tL}</span><span style="font-size:11px;color:#909088">${TMAP[d]}m</span><span style="font-size:11px;color:#909088;display:inline-block;transform:${isOpen?'rotate(180deg)':'none'};transition:transform .2s">▼</span>`;
+
+    head.appendChild(ne);head.appendChild(info);head.appendChild(meta);
+    head.onclick=()=>{openMod=openMod===m.id?null:m.id;renderCourse();};
+
+    // BODY
+    const body=document.createElement('div');body.className='mb';body.style.display=isOpen?'block':'none';
+
+    // Capability note
+    const cn=document.createElement('div');cn.style.cssText='padding:12px 18px 0';
+    cn.innerHTML=`<span class="cn">Your ${m.dim} capability: ${ds(a,m.dim)}/5 → ${DLBL[d]} treatment · ~${TMAP[d]} min</span>`;
+    body.appendChild(cn);
+
+    // Teach section
+    const ts=document.createElement('div');ts.className='msec';
+    const tsl=document.createElement('div');tsl.className='msec-title';tsl.textContent='What you will learn';ts.appendChild(tsl);
+    const teachText=document.createElement('div');
+    teachText.style.cssText='font-size:13px;color:#5A5A56;line-height:1.75;white-space:pre-wrap';
+    teachText.textContent=TEACH[m.id];
+    ts.appendChild(teachText);
+    body.appendChild(ts);
+
+    // Practice task
+    const pt=document.createElement('div');pt.className='msec';
+    const ptl=document.createElement('div');ptl.className='msec-title';ptl.style.color='#0F6E56';ptl.textContent='Practice task';pt.appendChild(ptl);
+    const ptxt=document.createElement('div');ptxt.style.cssText='font-size:13px;color:#5A5A56;line-height:1.75;white-space:pre-wrap';ptxt.textContent=TASKS[m.id].practice;pt.appendChild(ptxt);
+    body.appendChild(pt);
+
+    // Setup task (if any)
+    if(TASKS[m.id].setup){
+      const st=document.createElement('div');st.className='msec';
+      const stl=document.createElement('div');stl.className='msec-title';stl.style.color='#534AB7';stl.textContent='Setup task — produces something you keep';st.appendChild(stl);
+      const stxt=document.createElement('div');stxt.style.cssText='font-size:13px;color:#5A5A56;line-height:1.75;white-space:pre-wrap';stxt.textContent=TASKS[m.id].setup;st.appendChild(stxt);
+      body.appendChild(st);
+    }
+
+    // Launch + complete buttons
+    const bsec=document.createElement('div');bsec.className='msec';
+    const br=document.createElement('div');br.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center';
+
+    const lb=document.createElement('button');lb.className='btn bp';lb.textContent=pg||dn?'Continue in Claude →':'Launch in Claude →';
+    lb.onclick=e=>{
+      e.stopPropagation();progMods.add(m.id);saveState();renderNav();renderCourse();
+      const prompt=fullPrompt(m,ans);
+      if(typeof sendPrompt==='function'){sendPrompt(prompt);}
+      else{document.getElementById('modal-prompt').value=prompt;document.getElementById('launch-modal').classList.add('open');}
+    };
+    br.appendChild(lb);
+
+    if(pg&&!dn){
+      const db2=document.createElement('button');db2.className='btn bgr';db2.textContent='Mark complete ✓';
+      db2.onclick=e=>{
+        e.stopPropagation();doneMods.add(m.id);
+        if(m.setupKey&&!refData[m.setupKey])refData[m.setupKey]=[`Module ${m.num} complete — ask Claude to summarise what was set up`];
+        saveState();renderNav();renderCourse();
+        document.getElementById('st-done').textContent=doneMods.size;
+        document.getElementById('cprog').style.width=Math.round(doneMods.size/8*100)+'%';
+        if(typeof sendPrompt==='function')sendPrompt(`Module ${m.num} complete. Give me a one-paragraph summary of everything we set up in this session — personas saved, formats configured, Projects created, tools built, or positioning drafted — so I can add it to my My Claude Setup reference.`);
+      };
+      br.appendChild(db2);
+    }
+
+    bsec.appendChild(br);body.appendChild(bsec);
+    card.appendChild(head);card.appendChild(body);list.appendChild(card);
+  });
+
+  document.getElementById('st-done').textContent=doneMods.size;
+  document.getElementById('cprog').style.width=Math.round(doneMods.size/8*100)+'%';
+  renderNav();
+}
+
+function renderRef(){
+  const c=document.getElementById('ref-content');c.innerHTML='';
+  const has=Object.keys(REFS).some(k=>refData[k]&&refData[k].length>0);
+  if(!has){c.innerHTML='<div style="font-size:13px;color:#909088;font-style:italic;padding:16px 0">Your Claude setup builds here as you complete modules. Start with Module 2 (memory) or Module 5 (personas) to see your first entries.</div>';return;}
+  Object.entries(REFS).forEach(([key,sec])=>{
+    const items=refData[key]||[];const div=document.createElement('div');div.className='rsec';
+    const title=document.createElement('div');title.className='rtitle';title.innerHTML=`<span class="ricon">${sec.icon}</span>${sec.title}`;div.appendChild(title);
+    if(!items.length){const e=document.createElement('div');e.className='re';e.textContent=sec.empty;div.appendChild(e);}
+    else items.forEach(item=>{const d=document.createElement('div');d.className='ri';d.textContent=item;div.appendChild(d);});
+    c.appendChild(div);
+  });
+}
+
+function renderPP(){
+  const a=ans;
+  document.getElementById('project-prompt').textContent=`You are a senior Claude capability coach running the Mastering Claude programme for this user.
+
+USER PROFILE
+Role: ${rl(a)}
+Field: ${sl(a)}
+Outputs: ${ol(a)}
+
+CAPABILITY RATINGS (1-5)
+${DIMS.map(d=>`— ${d.label}: ${ds(a,d.id)}/5`).join('\n')}
+
+TOP FRUSTRATIONS: ${tf(a)}
+TOP GOALS: ${tg(a)}
+
+FOR EVERY MODULE SESSION
+1. Teach the module content calibrated to the user's capability rating
+2. Give a practice task using their specific work context and output types
+3. For setup modules, walk through the setup step by step and confirm each item saved
+4. End with a structured summary the user can copy to their My Claude Setup reference
+
+Always treat the user as capable. No filler. Go straight to the work.`;
+}
+
+function copyPP(){
+  navigator.clipboard.writeText(document.getElementById('project-prompt').textContent).then(()=>{const b=document.getElementById('cpp-btn');b.textContent='Copied ✓';setTimeout(()=>{b.textContent='Copy →';},2000);});
+}
+
+function copyModalPrompt(){
+  const t=document.getElementById('modal-prompt').value;
+  navigator.clipboard.writeText(t).then(()=>{const b=document.getElementById('modal-copy-btn');b.textContent='Copied ✓';setTimeout(()=>{b.textContent='Copy prompt';},2000);});
+}
+
+function closeModal(){document.getElementById('launch-modal').classList.remove('open');}
+
+function exportRef(){
+  const a=ans;let text=`MY CLAUDE SETUP\nGenerated: ${new Date().toLocaleDateString()}\nProfile: ${rl(a)}, ${sl(a)}\n\n`;
+  Object.entries(REFS).forEach(([key,sec])=>{const items=refData[key]||[];text+=`${sec.title.toUpperCase()}\n${items.length?items.map(i=>`  — ${i}`).join('\n'):`  ${sec.empty}`}\n\n`;});
+  if(typeof sendPrompt==='function'){sendPrompt(`Here is my current My Claude Setup reference:\n\n${text}\nFormat this neatly. Highlight any gaps — modules I should still complete to have a full setup.`);}
+  else{navigator.clipboard.writeText(text).then(()=>alert('Setup copied to clipboard — paste it into Claude.'));}
+}
+
+async function saveState(){
+  const data={ans,done:[...doneMods],prog:[...progMods],ref:refData};
+  try{
+    if(typeof window.storage!=='undefined'&&window.storage){await window.storage.set('mc-v4',JSON.stringify(data));}
+    else{localStorage.setItem('mc-v4',JSON.stringify(data));}
+  }catch(e){}
+}
+
+async function loadState(){
+  try{
+    let raw=null;
+    if(typeof window.storage!=='undefined'&&window.storage){const r=await window.storage.get('mc-v4');if(r&&r.value)raw=r.value;}
+    else{raw=localStorage.getItem('mc-v4');}
+    if(raw){const d=JSON.parse(raw);ans=d.ans||{};doneMods=new Set(d.done||[]);progMods=new Set(d.prog||[]);refData=d.ref||{};renderCourse();renderNav();show('s-course');return;}
+  }catch(e){}
+  renderNav();
+}
+
+document.getElementById('start-btn').onclick=()=>{qIdx=0;ans={};renderQ();show('s-survey');};
+document.getElementById('back-btn').onclick=()=>{if(qIdx>0){qIdx--;renderQ();}};
+document.getElementById('next-btn').onclick=()=>{
+  const q=Qs[qIdx];
+  if(q.type==='single'&&!ans[q.id]){alert('Please select an option.');return;}
+  if(q.type==='multi'&&(!ans[q.id]||!ans[q.id].length)){alert('Please select at least one option.');return;}
+  if(qIdx<Qs.length-1){qIdx++;renderQ();}
+  else{saveState();renderCourse();renderNav();renderPP();show('s-course');}
+};
+
+loadState();
+</script>
+</body>
+</html>
