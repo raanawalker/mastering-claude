@@ -430,17 +430,30 @@ function renderQ(){
     b.appendChild(list);const h=document.createElement('div');h.className='qh';h.textContent='Select one option';b.appendChild(h);
 
   } else if(q.type==='text_with_opts'){
-    const ft=document.createElement('input');ft.type='text';ft.placeholder='e.g. NZ sheep and beef farming, personal training, secondary school teaching...';ft.className='fi';ft.value=ans.sector_text||'';ft.oninput=()=>{ans.sector_text=ft.value;};b.appendChild(ft);
-    const or=document.createElement('div');or.className='or-lbl';or.textContent='Or pick the closest category:';b.appendChild(or);
     const list=document.createElement('div');list.className='ol';
-    // put Other last
+    let ftWrap=null;
     const opts=[...q.opts.filter(o=>!o.startsWith('Other')),'Other — I\'ll describe it'];
     opts.forEach(o=>{
       const btn=document.createElement('button');btn.style.cssText=OS+(ans[q.id]===o?OSEL:OD);btn.textContent=o;
-      btn.onclick=()=>{list.querySelectorAll('button').forEach(x=>{x.style.cssText=OS+OD;});btn.style.cssText=OS+OSEL;ans[q.id]=o;};
+      const isOther=o==="Other — I'll describe it";
+      btn.onclick=()=>{
+        list.querySelectorAll('button').forEach(x=>{x.style.cssText=OS+OD;});
+        btn.style.cssText=OS+OSEL;ans[q.id]=o;
+        if(ftWrap)ftWrap.style.display=isOther?'block':'none';
+        if(!isOther)ans.sector_text='';
+      };
       list.appendChild(btn);
     });
-    b.appendChild(list);const h=document.createElement('div');h.className='qh';h.textContent='Type your field above, or select the closest category';b.appendChild(h);
+    b.appendChild(list);
+    // Free text appears below — only shown when Other is selected
+    ftWrap=document.createElement('div');
+    ftWrap.style.display=ans[q.id]==="Other — I'll describe it"?'block':'none';
+    ftWrap.style.marginTop='10px';
+    const ftLbl=document.createElement('div');ftLbl.className='or-lbl';ftLbl.textContent='Please describe your field:';
+    const ft=document.createElement('input');ft.type='text';ft.placeholder='e.g. NZ sheep and beef farming, personal training, secondary school teaching...';ft.className='fi';ft.style.marginBottom='0';ft.value=ans.sector_text||'';ft.oninput=()=>{ans.sector_text=ft.value;};
+    ftWrap.appendChild(ftLbl);ftWrap.appendChild(ft);
+    b.appendChild(ftWrap);
+    const h=document.createElement('div');h.className='qh';h.textContent='Select the closest category — choose Other to describe your own';b.appendChild(h);
 
   } else if(q.type==='multi'){
     const sel=ans[q.id]||[];const list=document.createElement('div');list.className='ol';let oi=null;
