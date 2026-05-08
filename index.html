@@ -206,10 +206,13 @@ textarea.fi{resize:none}
 
 <!-- COURSE -->
 <div class="screen" id="s-course">
-  <div class="tabs">
-    <button class="tab active" id="tb-modules" onclick="stab('modules')">Modules</button>
-    <button class="tab" id="tb-reference" onclick="stab('reference')">My Claude setup</button>
-    <button class="tab" id="tb-project" onclick="stab('project')">Project setup</button>
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--border);margin-bottom:24px">
+    <div class="tabs" style="border-bottom:none;margin-bottom:0">
+      <button class="tab active" id="tb-modules" onclick="stab('modules')">Modules</button>
+      <button class="tab" id="tb-reference" onclick="stab('reference')">My Claude setup</button>
+      <button class="tab" id="tb-project" onclick="stab('project')">Project setup</button>
+    </div>
+    <button onclick="restartSurvey()" style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text3);background:transparent;border:none;cursor:pointer;padding:0 0 8px 16px;text-decoration:underline;text-underline-offset:3px;white-space:nowrap">retake survey</button>
   </div>
 
   <div class="tp active" id="tab-modules">
@@ -652,6 +655,15 @@ async function loadState(){
 }
 
 document.getElementById('start-btn').onclick=()=>{qIdx=0;ans={};renderQ();show('s-survey');};
+function restartSurvey(){
+  if(!confirm('This will clear your survey answers and course progress. Are you sure?'))return;
+  try{
+    if(typeof window.storage!=='undefined'&&window.storage){window.storage.delete('mc-v4');}
+    else{localStorage.removeItem('mc-v4');}
+  }catch(e){}
+  ans={};doneMods=new Set();progMods=new Set();refData={};openMod=null;qIdx=0;
+  renderNav();show('s-survey');renderQ();
+}
 document.getElementById('back-btn').onclick=()=>{if(qIdx>0){qIdx--;renderQ();}};
 document.getElementById('next-btn').onclick=()=>{
   const q=Qs[qIdx];
